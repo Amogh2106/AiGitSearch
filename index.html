@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GitLook — search, explore and analyze GitHub repositories.">
+    <title>GitLook — GitHub Repository Explorer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-shell">
+        <header class="topbar">
+            <a class="brand" href="#" id="brand-link" aria-label="GitLook home">
+                <span class="brand-mark">G</span>
+                <span>GitLook</span>
+            </a>
+
+            <form class="search-form" id="search-form" role="search">
+                <label class="sr-only" for="search-input">Search GitHub repositories</label>
+                <span class="search-icon" aria-hidden="true">⌕</span>
+                <input
+                    id="search-input"
+                    type="search"
+                    placeholder="Search repositories, topics, or keywords..."
+                    autocomplete="off"
+                    spellcheck="false"
+                >
+                <button id="search-btn" class="primary-btn" type="submit">
+                    <span id="search-btn-text">Search</span>
+                    <span id="search-spinner" class="button-spinner hidden" aria-hidden="true"></span>
+                </button>
+            </form>
+
+            <div class="api-status" id="api-status" title="GitHub API status">
+                <span class="status-dot"></span>
+                <span id="api-status-text">API ready</span>
+            </div>
+        </header>
+
+        <main>
+            <section id="search-view" class="view">
+                <div class="hero">
+                    <div class="hero-copy">
+                        <span class="eyebrow">GITHUB REPOSITORY EXPLORER</span>
+                        <h1>Find great code.<br><span>Understand it deeper.</span></h1>
+                        <p>Search GitHub repositories and explore languages, commit activity, contributors, and project health in one focused dashboard.</p>
+                    </div>
+                    <div class="hero-orbit" aria-hidden="true">
+                        <div class="orbit orbit-one"></div>
+                        <div class="orbit orbit-two"></div>
+                        <div class="orbit-core">G</div>
+                    </div>
+                </div>
+
+                <div id="home-message" class="empty-state home-empty">
+                    <div class="empty-icon">⌕</div>
+                    <h2>Search GitHub repositories</h2>
+                    <p>Try <button class="text-example" data-query="machine learning">machine learning</button>, <button class="text-example" data-query="react dashboard">react dashboard</button>, or any topic you're curious about.</p>
+                </div>
+            </section>
+
+            <section id="results-view" class="view hidden">
+                <div class="section-heading">
+                    <div>
+                        <span class="eyebrow">SEARCH RESULTS</span>
+                        <h2 id="results-title">Repositories</h2>
+                    </div>
+                    <span class="result-count" id="result-count"></span>
+                </div>
+
+                <div id="results-loading" class="loading-grid hidden" aria-live="polite">
+                    <article class="repo-card skeleton-card"></article>
+                    <article class="repo-card skeleton-card"></article>
+                    <article class="repo-card skeleton-card"></article>
+                    <article class="repo-card skeleton-card"></article>
+                </div>
+
+                <div id="results-error" class="inline-state hidden"></div>
+                <div id="results-empty" class="empty-state hidden">
+                    <div class="empty-icon">∅</div>
+                    <h2>No repositories found</h2>
+                    <p>Try a broader keyword, a different topic, or a shorter search query.</p>
+                </div>
+                <div id="results-grid" class="repo-grid"></div>
+
+                <div id="pagination" class="pagination hidden">
+                    <button id="prev-page" class="secondary-btn" type="button">← Previous</button>
+                    <span id="page-label">Page 1</span>
+                    <button id="next-page" class="secondary-btn" type="button">Next →</button>
+                </div>
+            </section>
+
+            <section id="repository-view" class="view hidden">
+                <button id="back-btn" class="back-btn" type="button">← Back to results</button>
+
+                <div id="details-loading" class="details-loading hidden" aria-live="polite">
+                    <div class="detail-hero skeleton-block"></div>
+                    <div class="stats-grid">
+                        <div class="stat-card skeleton-block"></div>
+                        <div class="stat-card skeleton-block"></div>
+                        <div class="stat-card skeleton-block"></div>
+                        <div class="stat-card skeleton-block"></div>
+                    </div>
+                </div>
+
+                <div id="details-error" class="inline-state hidden"></div>
+
+                <div id="repository-content" class="hidden">
+                    <article class="detail-hero">
+                        <div class="detail-identity">
+                            <img id="detail-avatar" class="detail-avatar" src="" alt="">
+                            <div>
+                                <div class="owner-line">
+                                    <span id="detail-owner"></span>
+                                    <span class="slash">/</span>
+                                    <span id="detail-name"></span>
+                                </div>
+                                <h1 id="detail-title"></h1>
+                                <p id="detail-description"></p>
+                                <div class="topic-list" id="topic-list"></div>
+                            </div>
+                        </div>
+                        <a id="github-link" class="primary-btn external-link" href="#" target="_blank" rel="noopener noreferrer">Open on GitHub ↗</a>
+                    </article>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-label">Stars</span>
+                            <strong id="detail-stars">—</strong>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Forks</span>
+                            <strong id="detail-forks">—</strong>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Open issues</span>
+                            <strong id="detail-issues">—</strong>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Language</span>
+                            <strong id="detail-language">—</strong>
+                        </div>
+                    </div>
+
+                    <div class="meta-strip">
+                        <div><span>License</span><strong id="detail-license">No license specified</strong></div>
+                        <div><span>Created</span><strong id="detail-created">—</strong></div>
+                        <div><span>Last updated</span><strong id="detail-updated">—</strong></div>
+                        <div><span>Repository URL</span><a id="detail-url" href="#" target="_blank" rel="noopener noreferrer">View repository ↗</a></div>
+                    </div>
+
+                    <div class="analytics-grid">
+                        <section class="panel language-panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <span class="eyebrow">LANGUAGE BREAKDOWN</span>
+                                    <h2>What's this repo made of?</h2>
+                                </div>
+                            </div>
+                            <div id="languages-loading" class="section-loading">Loading languages<span class="dots"></span></div>
+                            <div id="languages-error" class="section-error hidden"></div>
+                            <div id="languages-empty" class="section-empty hidden">No language data is available for this repository.</div>
+                            <div id="language-bars" class="language-bars"></div>
+                        </section>
+
+                        <section class="panel activity-panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <span class="eyebrow">COMMIT ACTIVITY</span>
+                                    <h2>Recent project momentum</h2>
+                                </div>
+                            </div>
+                            <div id="activity-loading" class="section-loading">Loading activity<span class="dots"></span></div>
+                            <div id="activity-error" class="section-error hidden"></div>
+                            <div id="activity-empty" class="section-empty hidden">No recent commit activity available.</div>
+                            <div id="activity-chart-wrap" class="chart-wrap hidden">
+                                <canvas id="activity-chart" aria-label="Weekly commit activity chart"></canvas>
+                                <div class="chart-axis"><span>Older</span><span>Recent</span></div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <section class="panel contributors-panel">
+                        <div class="panel-heading">
+                            <div>
+                                <span class="eyebrow">CONTRIBUTORS</span>
+                                <h2>People building it</h2>
+                            </div>
+                            <span class="contributor-count" id="contributor-count"></span>
+                        </div>
+                        <div id="contributors-loading" class="section-loading">Loading contributors<span class="dots"></span></div>
+                        <div id="contributors-error" class="section-error hidden"></div>
+                        <div id="contributors-empty" class="section-empty hidden">No contributor data is available.</div>
+                        <div id="contributors-grid" class="contributors-grid"></div>
+                    </section>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <span>GitLook</span>
+            <span>Powered by the GitHub REST API</span>
+        </footer>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="script.js"></script>
+</body>
+</html>
